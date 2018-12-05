@@ -3,8 +3,10 @@ from numpy import *
 from pylab import *
 from matplotlib.ticker import MultipleLocator,LinearLocator
 import pandas
-
 f1 = 'dat/DGS1.csv'
+f2 = 'dat/DGS2.csv'
+f3 = 'dat/DGS3.csv'
+f5 = 'dat/DGS5.csv'
 f10= 'dat/DGS10.csv'
 fJ = 'dat/BAMLH0A3HYCEY.csv'
 
@@ -17,16 +19,27 @@ def get_df(f):
   return df.set_index('DATE')
 
 df1 = get_df(f1)
+df2 = get_df(f2).reindex(df1.index)
+df3 = get_df(f3).reindex(df1.index)
+df5 = get_df(f5).reindex(df1.index)
 df10= get_df(f10).reindex(df1.index)
 dfJ = get_df(fJ).reindex(df1.index)
 
 dfd= {
-  'DATE'   : df1.index,
-  'DGS1'   : df1.DGS1,
-  'DGS10'  : df10.DGS10,
-  'JUNK'   : dfJ.BAMLH0A3HYCEY,
-  'yratio' : df1.DGS1 / df10.DGS10,
-  'jratio' : df10.DGS10 / dfJ.BAMLH0A3HYCEY,
+  'DATE'    : df1.index,
+  'DGS1'    : df1.DGS1,
+  'DGS2'    : df2.DGS2,
+  'DGS3'    : df3.DGS3,
+  'DGS5'    : df5.DGS5,
+  'DGS10'   : df10.DGS10,
+  'JUNK'    : dfJ.BAMLH0A3HYCEY,
+  'y1ratio' : df1.DGS1 / df10.DGS10,
+  'y2ratio' : df2.DGS2 / df10.DGS10,
+  'y5ratio' : df5.DGS5 / df10.DGS10,
+  'x1ratio' : df1.DGS1 / df5.DGS5,
+  'x2ratio' : df2.DGS2 / df5.DGS5,
+  'x3ratio' : df3.DGS3 / df5.DGS5,
+  'jratio'  : df10.DGS10 / dfJ.BAMLH0A3HYCEY,
 }
 
 df = pandas.DataFrame(dfd)
@@ -51,18 +64,25 @@ for recession in recessions:
   fill_betweenx(ext,*recession[:2],color='k',alpha=.1)
   fill_betweenx(ext,*recession[1:-1],color='k',alpha=.2)
   fill_betweenx(ext,*recession[-2:],color='k',alpha=.1)
-plot(df.DATE,df.jratio,'b-')
-plot(df.DATE,df.yratio,'k-')
+#plot(df.DATE,df.jratio,'b-')
+plot(df.DATE,df.y1ratio,'-',c='#000000',label='$(1,10)$')#alpha=1.0)
+plot(df.DATE,df.y2ratio,'-',c='#333333',label='$(2,10)$')#alpha=0.7)
+plot(df.DATE,df.y5ratio,'-',c='#777777',label='$(5,10)$')#alpha=0.4)
+plot(df.DATE,df.x1ratio,'-',c='#0000ff',label='$(1, 5)$')#alpha=1.0)
+plot(df.DATE,df.x2ratio,'-',c='#0000cc',label='$(2, 5)$')#alpha=0.7)
+plot(df.DATE,df.x3ratio,'-',c='#000099',label='$(3, 5)$')#alpha=0.4)
+l = legend(fontsize=12,ncol=2,frameon=True,title=r'$(a,b)$')
+setp(l.get_title(),fontsize=14)
 xlabel(r'Year')
-ylabel(r'treas. yield ratio: $\frac{1\textrm{ year}}{10\textrm{ year}}$')
+ylabel(r'treas. yield ratio: $\frac{a\textrm{ year}}{b\textrm{ year}}$')
 grid(which='major',ls=':')
 grid(which='minor',ls=':',alpha=0.5)
 xlim(datetime64('1960'),datetime64('2020'))
 ylim(0,1.50)
 ax.xaxis.set_minor_locator(LinearLocator(numticks=61))
 ax.yaxis.set_minor_locator(MultipleLocator(0.1))
-ax2 = ax.twinx()
-ax2.set_ylim(ax.get_ylim())
-ax2.set_ylabel(r'junk yield ratio: $\frac{10\textrm{ year}}{\textrm{Junk}}$',color='b')
-ax2.xaxis.set_minor_locator(LinearLocator(numticks=61))
+#ax2 = ax.twinx()
+#ax2.set_ylim(ax.get_ylim())
+#ax2.set_ylabel(r'junk yield ratio: $\frac{10\textrm{ year}}{\textrm{Junk}}$',color='b')
+#ax2.xaxis.set_minor_locator(LinearLocator(numticks=61))
 savefig('treasury_yield_ratio.png',bbox_inches='tight',dpi=300)
